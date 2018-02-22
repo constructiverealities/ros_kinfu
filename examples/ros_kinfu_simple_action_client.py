@@ -1,13 +1,13 @@
 #! /usr/bin/env python
 import rospy, actionlib
 
-
 # import message that we'll need to interact with the action server
 from kinfu_msgs.msg import RequestAction, KinfuTsdfRequest, KinfuRequestHeader
 # we need this definition in order to be able to publish the pointcloud
 from sensor_msgs.msg import PointCloud2
 
-def mesh_request(reset = False):
+
+def mesh_request(reset=False):
     # Creates a client (if not yet ecists) to make a request to our action
     # server to extract the current mesh
 
@@ -16,7 +16,7 @@ def mesh_request(reset = False):
     # variable to keep track of some timing to benchmark
     times = {'start_time': rospy.get_rostime()}
 
-    #create the action client if it doesn't already exists
+    # create the action client if it doesn't already exists
     if not kin_fu.action_client:
         # create the action client if we need to
         kin_fu.action_client = actionlib.SimpleActionClient(kin_fu.request_action_key, RequestAction)
@@ -28,8 +28,8 @@ def mesh_request(reset = False):
     kin_fu.seeds['mesh'] += 1
     # Creates a goal to send to the action server.
     this_tsdf_request = KinfuTsdfRequest()
-    this_tsdf_request.request_reset = reset # boolean indicating that we wish the integration volume to be reset
-    this_tsdf_request.tsdf_header.request_type = 2 # a mesh
+    this_tsdf_request.request_reset = reset  # boolean indicating that we wish the integration volume to be reset
+    this_tsdf_request.tsdf_header.request_type = 2  # a mesh
     this_tsdf_request.tsdf_header.request_id = kin_fu.seeds['mesh']
 
     fake_goal_wrapper = Generic()
@@ -63,20 +63,21 @@ def mesh_request(reset = False):
     export_ply_file(action_result.mesh)
     times['post_export_time'] = rospy.get_rostime()
 
-    timing={
-        'extraction': (times['post_extract_time']-times['start_time']).to_nsec()/1000000,
-        'retrieval': (times['pose_retrieve_time']-times['post_extract_time']).to_nsec()/1000000,
-        'publishing': (times['post_publish_time']-times['pose_retrieve_time']).to_nsec()/1000000,
+    timing = {
+        'extraction': (times['post_extract_time'] - times['start_time']).to_nsec() / 1000000,
+        'retrieval': (times['pose_retrieve_time'] - times['post_extract_time']).to_nsec() / 1000000,
+        'publishing': (times['post_publish_time'] - times['pose_retrieve_time']).to_nsec() / 1000000,
         # 'export': (times['post_export_time']-times['post_publish_time']).to_nsec()/1000000,
     }
-    print "Timing summary:"
+    rospt.loginfo("Extraction timing summary")
     for item in timing.keys():
-        print "\t" + item + ": " + str(timing[item]) + " milliseconds"
+        print "\t\t\t" + item + ": " + str(timing[item]) + " milliseconds"
+
 
 def publish_point_cloud(mesh_polygon):
     if not kin_fu.publishers['point_cloud']:
         kin_fu.publishers['point_cloud'] = rospy.Publisher(
-            '/kinfu/extract/pointcloud',
+            kin_fu.point_cloud_publishing_topic_name,
             PointCloud2,
             queue_size=5)
         kin_fu.publishers['point_cloud'].publish(mesh_polygon.cloud)
@@ -88,32 +89,37 @@ def export_ply_file(mesh):
 
 
 def KinFuConsumer_Factory():
-    this_object = Generic()
-    this_object.request_action_key = "/kinfu_output/actions/request"
-    this_object.action_client = None
-    this_object.seeds= {'mesh':0}
-    this_object.publishers = {'point_cloud':None}
-    return this_object
+    this_consumer = Generic()
+    this_consumer.request_action_key = "/kinfu_output/actions/request"
+    this_consumer.action_client = None
+    this_consumer.seeds = {'mesh': 0}
+    this_consumer.publishers = {'point_cloud': None}
+    this_consumer.point_cloud_publishing_topic_name = '/kinfu/extract/pointcloud'
+    return this_consumer
+
 
 if __name__ == '__main__':
     class Generic:
         pass
 
+
     try:
-        # this is the name of the action based interface
+        # this is the name of our simple interface to ros_kinfu
         kin_fu = KinFuConsumer_Factory()
-        # Initializes a rospy node so that the SimpleActionClient can
-        # publish and subscribe over ROS.
-        rospy.init_node('ros_kinfo_simple_action_client')
+
+        # Initializes a rospy node
+        rospy.init_node('ros_kinfu_simple_action_client')
+
         # set a rate
         rate_val = .05
-        rospy.loginfo("FYI: Mesh request rate is every: " + str(1/rate_val) + " second(s)")
-        rate = rospy.Rate(rate_val) # once every ten (10) seconds
+        rospy.loginfo("FYI: Mesh request rate is every: " + str(1 / rate_val) + " second(s)")
+        rate = rospy.Rate(rate_val)  # once every ten (10) seconds
 
+        # loop until we are killed
         while not rospy.is_shutdown():
             # result = fibonacci_client()
             result = mesh_request(True)
-            #delay and then make another pass
+            # delay and then make another pass
             rate.sleep()
     except rospy.ROSInterruptException:
         print "program interrupted before completion"
