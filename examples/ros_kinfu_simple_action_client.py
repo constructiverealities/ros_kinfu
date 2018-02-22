@@ -5,6 +5,7 @@ import rospy, actionlib
 from kinfu_msgs.msg import RequestAction, KinfuTsdfRequest, KinfuRequestHeader
 # we need this definition in order to be able to publish the pointcloud
 from sensor_msgs.msg import PointCloud2
+from std_msgs.msg import Empty
 
 
 def mesh_request(reset=False):
@@ -69,23 +70,33 @@ def mesh_request(reset=False):
         'publishing': (times['post_publish_time'] - times['pose_retrieve_time']).to_nsec() / 1000000,
         # 'export': (times['post_export_time']-times['post_publish_time']).to_nsec()/1000000,
     }
-    rospt.loginfo("Extraction timing summary")
+    rospy.loginfo("Extraction timing summary")
     for item in timing.keys():
         print "\t\t\t" + item + ": " + str(timing[item]) + " milliseconds"
 
 
 def publish_point_cloud(mesh_polygon):
-    if not kin_fu.publishers['point_cloud']:
-        kin_fu.publishers['point_cloud'] = rospy.Publisher(
-            kin_fu.point_cloud_publishing_topic_name,
-            PointCloud2,
-            queue_size=5)
-        kin_fu.publishers['point_cloud'].publish(mesh_polygon.cloud)
+    try:
+        if not kin_fu.publishers['point_cloud']:
+            kin_fu.publishers['point_cloud'] = rospy.Publisher(
+                kin_fu.point_cloud_publishing_topic_name,
+                PointCloud2,
+                queue_size=10)
 
+        mesh_polygon.cloud.header.frame_id = kin_fu.point_cloud_frame_id
+        mesh_polygon.cloud.header.stamp = rospy.get_rostime()
+        kin_fu.publishers['point_cloud'].publish(mesh_polygon.cloud)
+        # rospy.loginfo("think we published to: " + kin_fu.point_cloud_publishing_topic_name)
+    except:
+        raise
 
 def export_ply_file(mesh):
     print "polygons:", str(len(mesh.polygons)),
     print "points:", str(mesh.cloud.width)
+
+
+def handle_lost_event(empty):
+    rospy.loginfo("Shit the ICP got lost!")
 
 
 def KinFuConsumer_Factory():
@@ -95,6 +106,9 @@ def KinFuConsumer_Factory():
     this_consumer.seeds = {'mesh': 0}
     this_consumer.publishers = {'point_cloud': None}
     this_consumer.point_cloud_publishing_topic_name = '/kinfu/extract/pointcloud'
+    this_consumer.point_cloud_frame_id = 'map_0000'
+    this_consumer.subscribers = {'is_lost': rospy.Subscriber('/kinfu_icp_lost_topic', Empty, handle_lost_event)}
+
     return this_consumer
 
 
@@ -111,14 +125,14 @@ if __name__ == '__main__':
         rospy.init_node('ros_kinfu_simple_action_client')
 
         # set a rate
-        rate_val = .05
+        rate_val = .1
         rospy.loginfo("FYI: Mesh request rate is every: " + str(1 / rate_val) + " second(s)")
         rate = rospy.Rate(rate_val)  # once every ten (10) seconds
 
         # loop until we are killed
         while not rospy.is_shutdown():
             # result = fibonacci_client()
-            result = mesh_request(True)
+            result = mesh_request(kin_fu.seeds['mesh'] % 5 == 0)
             # delay and then make another pass
             rate.sleep()
     except rospy.ROSInterruptException:

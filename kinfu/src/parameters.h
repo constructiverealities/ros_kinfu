@@ -58,10 +58,10 @@
 
 // only when PARAM_NAME_FORCED_TF_POSITION is enabled (by param or by command)
 #define PARAM_NAME_FORCED_REFERENCE_FRAME "forced_tf_reference_frame"
-#define PARAM_DEFAULT_FORCED_REFERENCE_FRAME ""
+#define PARAM_DEFAULT_FORCED_REFERENCE_FRAME "map_0000"
 
 #define PARAM_NAME_FORCED_CURRENT_FRAME   "forced_tf_current_frame"
-#define PARAM_DEFAULT_FORCED_CURRENT_FRAME ""
+#define PARAM_DEFAULT_FORCED_CURRENT_FRAME "tracked_object_0"
 
 #define PARAM_NAME_REQUEST_ACTION_MAGIC   "kinfu_output_request_action_magic"
 #define PARAM_DEFAULT_REQUEST_ACTION_MAGIC "KINFU_OUTPUT_ACTION_MAGIC_SOURCE_NAME"

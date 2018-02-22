@@ -5,7 +5,7 @@
     <param name="prefix_topic" value="/kinect2" />
     <param name="camera_info_topic" value="/kinect2/sd/camera_info" />
     <param name="depth_image_topic" value="/kinect2/sd/image_depth_rect" />
-    <param name="autostart" value="true" />
+    <param name="autostart" value="false"/>
     <param name="response_topic" value="/kinfu_response_topic" />
     <param name="request_topic" value="/kinfu_request_topic" />
     <param name="extract_known_points" value="false" />
@@ -13,5 +13,11 @@
     <param name="depth_height" type="int" value="424" />
     <param name="depth_width" type="int" value="512" />
   </node>
+
+  <!--<node-->
+  <!--pkg="tf2_ros"-->
+  <!--type="static_transform_publisher"-->
+  <!--name="map_0000__2__kinfu_first_frame"-->
+  <!--args="0 0 0 0 3.14 1.57 map_0000 kinfu_first_frame"/>-->
 
 </launch>

@@ -1,0 +1,10 @@
+<launch>
+    <!--<include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch" />-->
+
+    <node pkg="kinfu_tf_feeder" type="kinfu_tf_feeder" name="ligthouse_kinfu_feeder" output="screen">
+        <param name="reference_frame_id" value="map_0000"/>
+        <param name="pose_frame_id" value="tracked_object_0"/>
+        <param name="autostart" value="true"/>
+    </node>
+
+</launch>
