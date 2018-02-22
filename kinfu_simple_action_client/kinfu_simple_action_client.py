@@ -1,43 +1,45 @@
 #! /usr/bin/env python
+import rospy, actionlib
 
-import rospy
-# from __future__ import print_function
 
-# Brings in the SimpleActionClient
-import actionlib
-
-# Brings in the messages used by the fibonacci action, including the
-# goal message and the result message.
-import actionlib_tutorials.msg
-from kinfu_msgs.msg import RequestAction,KinfuTsdfRequest,KinfuRequestHeader
+# import message that we'll need to interact with the action server
+from kinfu_msgs.msg import RequestAction, KinfuTsdfRequest, KinfuRequestHeader
+# we need this definition in order to be able to publish the pointcloud
 from sensor_msgs.msg import PointCloud2
 
-
 def mesh_request(reset = False):
-    rospy.loginfo("Meshing function now")
+    # Creates a client (if not yet ecists) to make a request to our action
+    # server to extract the current mesh
+
+    rospy.loginfo("Making request to extract mesh from KinFu now...")
+
     # variable to keep track of some timing to benchmark
-    times={}
-    times['start_time'] = rospy.get_rostime()
-    # () to the constructor.
+    times = {'start_time': rospy.get_rostime()}
+
+    #create the action client if it doesn't already exists
     if not kin_fu.action_client:
         # create the action client if we need to
         kin_fu.action_client = actionlib.SimpleActionClient(kin_fu.request_action_key, RequestAction)
 
     # Waits until the action server has started up and started
-    # listening for goals.
     kin_fu.action_client.wait_for_server()
 
-    # Creates a goal to send to the action server.
+    # increment our request counter
     kin_fu.seeds['mesh'] += 1
+    # Creates a goal to send to the action server.
     this_tsdf_request = KinfuTsdfRequest()
-    this_tsdf_request.request_reset = reset
+    this_tsdf_request.request_reset = reset # boolean indicating that we wish the integration volume to be reset
     this_tsdf_request.tsdf_header.request_type = 2 # a mesh
     this_tsdf_request.tsdf_header.request_id = kin_fu.seeds['mesh']
 
-    fake_goal_wrapper = Generic()  # unclear why this was required.  the auto generated serialize function expecte a goal with a top level attribute called request
+    fake_goal_wrapper = Generic()
+    # unclear why this was required.  The auto generated serialize function
+    # expectes a goal with a top level attribute matching the message
+    # type (in this case: request) but if you create the 'RequestAction' message
+    # it has an extra layer of properties that causes the serialization of the
+    # message to fail.  so we create a fake wrapper and add our request message
+    # directly to it so that we can use the client
     fake_goal_wrapper.request = this_tsdf_request
-    # goal = this_tsdf_request
-    # goal = RequestAction(request=this_tsdf_request)
 
     # Sends the goal to the action server.
     kin_fu.action_client.send_goal(fake_goal_wrapper)
@@ -46,16 +48,19 @@ def mesh_request(reset = False):
     kin_fu.action_client.wait_for_result()
     times['post_extract_time'] = rospy.get_rostime()
     rospy.loginfo("extracted...")
-    # Prints out the result of executing the action
-    result = kin_fu.action_client.get_result()
+
+    # Retrieve the result
+    action_result = kin_fu.action_client.get_result()
     times['pose_retrieve_time'] = rospy.get_rostime()
     rospy.loginfo("retrieved...")
 
-    publish_point_cloud(result.mesh)
-    times['post_publish_time'] =rospy.get_rostime()
+    # Now publish the cloud part of the mesh
+    publish_point_cloud(action_result.mesh)
+    times['post_publish_time'] = rospy.get_rostime()
     rospy.loginfo("published...")
 
-    export_ply_file(result.mesh)
+    # Now export the mesh
+    export_ply_file(action_result.mesh)
     times['post_export_time'] = rospy.get_rostime()
 
     timing={
@@ -67,7 +72,6 @@ def mesh_request(reset = False):
     print "Timing summary:"
     for item in timing.keys():
         print "\t" + item + ": " + str(timing[item]) + " milliseconds"
-
 
 def publish_point_cloud(mesh_polygon):
     if not kin_fu.publishers['point_cloud']:
