@@ -1,5 +1,5 @@
 <launch>
-  <include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch" />
+  <!--<include file="$(find kinect2_bridge)/launch/kinect2_bridge.launch" />-->
   
   <node pkg="kinfu" type="kinfu" name="kinect_kinfu1" output="screen">
     <param name="prefix_topic" value="/kinect2" />
