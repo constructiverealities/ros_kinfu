@@ -35,7 +35,7 @@ def mesh_request(reset=False):
 
     fake_goal_wrapper = Generic()
     # unclear why this was required.  The auto generated serialize function
-    # expectes a goal with a top level attribute matching the message
+    # expects a goal with a top level attribute matching the message
     # type (in this case: request) but if you create the 'RequestAction' message
     # it has an extra layer of properties that causes the serialization of the
     # message to fail.  so we create a fake wrapper and add our request message
@@ -119,6 +119,7 @@ if __name__ == '__main__':
 
     try:
         # this is the name of our simple interface to ros_kinfu
+        run_once = True
         kin_fu = KinFuConsumer_Factory()
 
         # Initializes a rospy node
@@ -132,8 +133,11 @@ if __name__ == '__main__':
         # loop until we are killed
         while not rospy.is_shutdown():
             # result = fibonacci_client()
-            result = mesh_request(kin_fu.seeds['mesh'] % 5 == 0)
+            result = mesh_request((kin_fu.seeds['mesh'] + 1) % 5 == 0)
             # delay and then make another pass
+            if run_once:
+                print "quitting.."
+                quit()
             rate.sleep()
     except rospy.ROSInterruptException:
         print "program interrupted before completion"
