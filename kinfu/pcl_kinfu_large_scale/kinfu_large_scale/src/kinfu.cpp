@@ -228,7 +228,7 @@ void pcl::gpu::kinfuLS::KinfuTracker::syncKnownPoints()
 pcl::PointCloud<pcl::PointXYZI>::Ptr pcl::gpu::kinfuLS::KinfuTracker::extractWorld()
 {
   //extract current volume to world model
-  PCL_INFO("Extracting current volume...");
+  PCL_INFO("Extracting current volume... (kinfuLS::KinfuTracker::extractWorld)\n");
   if (!just_shifted_)
     cyclical_.checkForShift(tsdf_volume_, getCameraPose (), 0.6 * volume_size_, true, true, true); // this will force the extraction of the whole cube.
   else
@@ -263,7 +263,7 @@ pcl::PointCloud<pcl::PointXYZI>::Ptr pcl::gpu::kinfuLS::KinfuTracker::extractWor
 void
 pcl::gpu::kinfuLS::KinfuTracker::reset ()
 {
-  cout << "in reset function!" << std::endl;
+  cout << "Reset requested!" << std::endl;
   
   if (global_time_)
     PCL_WARN ("Reset\n");
