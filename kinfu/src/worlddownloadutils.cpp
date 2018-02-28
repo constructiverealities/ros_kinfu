@@ -80,6 +80,7 @@ template <class PointT>
 void WorldDownloadManager::mergePointCloudsAndMesh(std::vector<typename pcl::PointCloud<PointT>::Ptr> &pointclouds,
   typename pcl::PointCloud<PointT>::Ptr out_cloud,std::vector<TriangleVectorPtr> * meshes,TriangleVector * out_mesh)
 {
+  std::cout << "WorldDownloadManager::mergePointCloudsAndMesh()";
   uint offset = 0;
   const uint pointcloud_count = pointclouds.size();
 
@@ -284,6 +285,7 @@ bool WorldDownloadManager::marchingCubes(TsdfCloud::Ptr cloud, std::vector<Mesh:
 {
   try
   {
+    std::cout << "WorldDownloadManager::marchingCubes()";
    // Creating world model object
     pcl::kinfuLS::WorldModel<pcl::PointXYZI> wm;
 
@@ -304,9 +306,10 @@ bool WorldDownloadManager::marchingCubes(TsdfCloud::Ptr cloud, std::vector<Mesh:
     pcl::gpu::kinfuLS::StandaloneMarchingCubes<pcl::PointXYZI> marching_cubes (m_marching_cubes_volume_size,
       m_marching_cubes_volume_size, m_marching_cubes_volume_size, volume_size);
 
+    marching_cubes.getMeshesFromTSDFVector(clouds,transforms);
     marching_cubes.getMeshesFromTSDFVectorMemory(clouds,transforms,output_meshes);
 
-    std::cout << "Done!\n";
+    std::cout << "Done! (WorldDownloadManager::marchingCubes)\n";
     return true;
   }
   catch (const pcl::PCLException& /*e*/) { PCL_ERROR ("PCLException... Exiting...\n"); return false; }
@@ -341,6 +344,7 @@ Eigen::Affine3f WorldDownloadManager::toEigenAffine(const kinfu_msgs::KinfuPose 
 void WorldDownloadManager::transformBoundingBoxAndExpand(const Eigen::Vector3f& bbox_min,const Eigen::Vector3f& bbox_max,
   const Eigen::Affine3f& transform,Eigen::Vector3f& bbox_min_out,Eigen::Vector3f& bbox_max_out)
 {
+  std::cout << "WorldDownloadManager::transformBoundingBoxAndExpand()";
   const int SIZE = 2;
   Eigen::Vector3f inv[SIZE];
   inv[0] = bbox_min;
@@ -392,6 +396,7 @@ void WorldDownloadManager::unlockKinfu()
   m_kinfu_available = true;
   m_kinfu_waiting_count--;
   m_kinfu_waiting_cond.notify_all();
+  std::cout << "Kinfu Unlocked\n";
 }
 
 bool WorldDownloadManager::shiftNear(const Eigen::Affine3f & pose, float distance)
@@ -464,6 +469,7 @@ void WorldDownloadManager::initRaycaster(bool has_intrinsics,const kinfu_msgs::K
 void WorldDownloadManager::cropTsdfCloud(const TsdfCloud & cloud_in,TsdfCloud & cloud_out,
   const kinfu_msgs::KinfuCloudPoint & min,const kinfu_msgs::KinfuCloudPoint & max)
 {
+  std::cout << "WorldDownloadManager::cropTsdfCloud()";
   cloud_out.clear();
 
   uint in_size = cloud_in.size();
@@ -575,6 +581,7 @@ template <class PointT>
   void WorldDownloadManager::removeDuplicatePoints(typename pcl::PointCloud<PointT>::ConstPtr cloud,
   TriangleVectorConstPtr triangles, typename pcl::PointCloud<PointT>::Ptr out_cloud, TriangleVectorPtr out_triangles)
 {
+  std::cout << "WorldDownloadManager::removeDuplicatePoints():";
   const uint64 input_size = cloud->size();
   std::vector<uint64> ordered(input_size);
   for (uint64 i = 0; i < input_size; i++)

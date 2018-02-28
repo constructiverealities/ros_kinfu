@@ -131,11 +131,14 @@ bool WorldDownloadManager::hasRequests()
 void WorldDownloadManager::requestWorker(kinfu_msgs::KinfuTsdfRequestConstPtr req,
   std::list<boost::thread *>::iterator thread_iterator)
 {
+  ROS_INFO("commands type: %u", req->tsdf_header.request_type);
   if (uint(req->tsdf_header.request_type) == uint(req->tsdf_header.REQUEST_TYPE_PING))
     pingWorker(req);
   else if (uint(req->tsdf_header.request_type) == uint(req->tsdf_header.REQUEST_TYPE_GET_TSDF))
     extractTsdfWorker(req);
   else if (uint(req->tsdf_header.request_type) == uint(req->tsdf_header.REQUEST_TYPE_GET_MESH))
+    extractMeshWorker(req);
+  else if (uint(req->tsdf_header.request_type) == uint(req->tsdf_header.REQUEST_TYPE_WRITE_MESH))
     extractMeshWorker(req);
   else if (uint(req->tsdf_header.request_type) == uint(req->tsdf_header.REQUEST_TYPE_GET_CLOUD))
     extractCloudWorker(req);
@@ -269,7 +272,7 @@ void WorldDownloadManager::extractCloudWorkerMCWithNormals(kinfu_msgs::KinfuTsdf
 
   std::vector<Mesh::Ptr> meshes;
 
-  ROS_INFO("kinfu: Marching cubes...");
+  ROS_INFO("kinfu: Marching cubes... (extractCloudWorkerMCWithNormals)");
   if (!marchingCubes(kinfu_cloud,meshes))
     return; // ERROR
 
@@ -421,7 +424,7 @@ void WorldDownloadManager::extractMeshWorker(kinfu_msgs::KinfuTsdfRequestConstPt
 
   std::vector<Mesh::Ptr> meshes;
 
-  ROS_INFO("kinfu: Marching cubes...");
+  ROS_INFO("kinfu: Marching cubes... (extractMeshWorker)");
   if (!marchingCubes(kinfu_cloud,meshes))
     return; // ERROR
 
