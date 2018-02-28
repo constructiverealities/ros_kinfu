@@ -30,7 +30,7 @@ def mesh_request(reset=False):
     # Creates a goal to send to the action server.
     this_tsdf_request = KinfuTsdfRequest()
     this_tsdf_request.request_reset = reset  # boolean indicating that we wish the integration volume to be reset
-    this_tsdf_request.tsdf_header.request_type = 2  # a mesh
+    this_tsdf_request.tsdf_header.request_type = 11  # a mesh but one we write to file
     this_tsdf_request.tsdf_header.request_id = kin_fu.seeds['mesh']
 
     fake_goal_wrapper = Generic()
