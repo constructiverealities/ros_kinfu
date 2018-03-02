@@ -72,3 +72,7 @@ As of 2016, the source of KinFu is included in the package, and separation betwe
 Riccardo Monica, Jacopo Aleotti, Stefano Caselli, A KinFu based approach for robot spatial attention and view planning, Robotics and Autonomous Systems, Volume 75, Part B, 2016
 
 2016-11-08
+
+
+-- Debugging Kinfu on Ubuntu
+https://askubuntu.com/questions/41629/after-upgrade-gdb-wont-attach-to-process
