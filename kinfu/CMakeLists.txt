@@ -16,7 +16,7 @@ find_package(catkin REQUIRED COMPONENTS
 )
 
 find_package(
-  PCL REQUIRED
+  PCL 1.8 REQUIRED
   )
 
 find_package(
