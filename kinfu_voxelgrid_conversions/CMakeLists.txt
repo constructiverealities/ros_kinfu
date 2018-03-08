@@ -8,7 +8,7 @@ find_package(catkin REQUIRED COMPONENTS
   pcl_conversions
 )
 
-find_package(PCL REQUIRED)
+find_package(PCL 1.8 REQUIRED)
 find_package(Boost REQUIRED)
 
 # hack for optional dependency
